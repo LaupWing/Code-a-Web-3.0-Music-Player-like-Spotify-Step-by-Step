@@ -63,4 +63,46 @@ describe("MusicNFTMarketplace", ()=>{
    })
 
 
+   describe('Updating royalty fee', ()=>{
+      it('Only deployer should be able to update royalty fee', async ()=>{
+         const fee = toWei(0.02)
+         await nftMarketplace.updateRoyaltyFee(fee)
+         await expect(
+            nftMarketplace.connect(user1).updateRoyaltyFee(fee)
+         ).to.be.revertedWith("Ownable: caller is not the owner")
+
+         expect(await nftMarketplace.royaltyFee()).to.equal(fee)
+      })
+   })
+
+   describe('Buying tokens', ()=>{
+      it('Should update seller to zero address, transfer NFT, pay seller,pay royalty to artist and emit a MarketItemBought event', async ()=>{
+         const deployerInitialEthBalance = await deployer.getBalance()
+         const artistInitialEthBalance = await artist.getBalance()
+
+         await expect(nftMarketplace.connect(user1).buyToken(0, {value: prices[0]}))
+            .to.emit(nftMarketplace, "MarketItemBought")
+            .withArgs(
+               0,
+               deployer.address,
+               user1.address,
+               prices[0]
+            )
+
+         const deployerFinalEthBalance = await deployer.getBalance()
+         const artistFinalEthBalance = await artist.getBalance()
+
+         expect((await nftMarketplace.marketItems(0)).seller).to.equal('0x0000000000000000000000000000000000000000')
+         expect(+fromWei(deployerFinalEthBalance)).to.equal(+fromWei(prices[0]) + +fromWei(deployerInitialEthBalance))
+         expect(+fromWei(artistFinalEthBalance)).to.equal(+fromWei(royaltyFee) + +fromWei(artistInitialEthBalance))
+
+         expect(await nftMarketplace.ownerOf(0)).to.equal(user1.address)
+      })
+
+      it('Should fail when ether amount sent with transaction does not equal asking price', async ()=>{
+         await expect(
+            nftMarketplace.connect(user1).buyToken(0, {value: prices[1]})
+         ).to.be.revertedWith('Please send the asking price in order to complete the purchase')
+      })
+   })
 })
