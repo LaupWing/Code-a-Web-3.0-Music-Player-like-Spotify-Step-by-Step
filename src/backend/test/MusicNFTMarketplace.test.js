@@ -105,4 +105,34 @@ describe("MusicNFTMarketplace", ()=>{
          ).to.be.revertedWith('Please send the asking price in order to complete the purchase')
       })
    })
+
+   describe('Reselling tokens', ()=>{
+      beforeEach(async ()=>{
+         await nftMarketplace.connect(user1).buyToken(0, {value: prices[0]})
+      })
+
+      it('Should track resale item, incr. ether balance by royalty fee, transfer NFT to marketplace and emit MarketItemRelisted event', async ()=>{
+         const resalePrice = toWei(2)
+         const initialMarketBalance = await ethers.provider.getBalance(nftMarketplace.address)
+
+         await expect(nftMarketplace.connect(user1).resellToken(0, resalePrice, {value: royaltyFee}))
+            .to.emit(nftMarketplace, "MarketItemRelisted")
+            .withArgs(
+               0,
+               user1.address,
+               resalePrice
+            )
+         const finalMarketBalance = await ethers.provider.getBalance(nftMarketplace.address)
+
+         expect(+fromWei(finalMarketBalance)).to.equal(+fromWei(royaltyFee) +  +fromWei(initialMarketBalance))
+         expect(await nftMarketplace.ownerOf(0)).to.equal(nftMarketplace.address)
+
+         const item = await nftMarketplace.marketItems(0)
+         expect(item.tokenId).to.equal(0)
+      })
+
+      it('Should fail price is set to zero and royalty fee is not paid', async ()=>{
+
+      })
+   })
 })
