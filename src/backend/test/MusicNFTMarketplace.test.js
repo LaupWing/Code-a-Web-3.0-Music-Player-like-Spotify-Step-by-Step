@@ -137,6 +137,9 @@ describe("MusicNFTMarketplace", ()=>{
          await expect(
             nftMarketplace.connect(user1).resellToken(0,0,{value: royaltyFee})
          ).to.be.revertedWith("Price must be higher than zero")
+         await expect(
+            nftMarketplace.connect(user1).resellToken(0, toWei(1),{value: royaltyFee})
+         ).to.be.revertedWith("Must pay royalty")
       })
    })
 })
