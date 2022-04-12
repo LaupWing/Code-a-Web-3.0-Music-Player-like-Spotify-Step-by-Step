@@ -142,4 +142,24 @@ describe("MusicNFTMarketplace", ()=>{
          ).to.be.revertedWith("Must pay royalty")
       })
    })
+
+   describe('Getter functions', ()=>{
+      let soldItems = [0, 1, 4]
+      let ownedByUser1 = [0, 1]
+      let ownedByuser2 = [4]
+      beforeEach(async ()=>{
+         await (await nftMarketplace.connect(user1).buyToken(0, {value: prices[0]})).wait()
+         await (await nftMarketplace.connect(user1).buyToken(1, {value: prices[1]})).wait()
+         await (await nftMarketplace.connect(user2).buyToken(4, {value: prices[4]})).wait()
+      })
+
+      it('getAllUnsoldTokens should fetch all the marketplace items up for sale', async ()=>{
+         const unsoldItems = await nftMarketplace.getAllUnsoldTokens()
+         expect(unsoldItems.every(i => !soldItems.some(j=> j === i.tokenId.toNumber()))).to.equal(true)
+         expect(unsoldItems.length === prices.length + soldItems.length).to.equal(true)
+      })
+      it('getMyTokens should fetch all tokens the user owns', async ()=>{
+
+      })
+   })
 })
