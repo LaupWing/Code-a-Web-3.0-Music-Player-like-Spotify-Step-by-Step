@@ -106,4 +106,8 @@ contract MusicNFTMarketplace is ERC721("DAppFi", "DAPP"), Ownable{
       }
       return tokens;
    }
+
+   function _baseURI() internal view virtual override returns (string memory){
+      return baseURI;
+   }
 }
