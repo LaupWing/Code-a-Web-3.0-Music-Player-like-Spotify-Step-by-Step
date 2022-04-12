@@ -129,10 +129,14 @@ describe("MusicNFTMarketplace", ()=>{
 
          const item = await nftMarketplace.marketItems(0)
          expect(item.tokenId).to.equal(0)
+         expect(item.seller).to.equal(user1.address)
+         expect(item.price).to.equal(resalePrice)
       })
 
       it('Should fail price is set to zero and royalty fee is not paid', async ()=>{
-
+         await expect(
+            nftMarketplace.connect(user1).resellToken(0,0,{value: royaltyFee})
+         ).to.be.revertedWith("Price must be higher than zero")
       })
    })
 })
