@@ -146,7 +146,7 @@ describe("MusicNFTMarketplace", ()=>{
    describe('Getter functions', ()=>{
       let soldItems = [0, 1, 4]
       let ownedByUser1 = [0, 1]
-      let ownedByuser2 = [4]
+      let ownedByUser2 = [4]
       beforeEach(async ()=>{
          await (await nftMarketplace.connect(user1).buyToken(0, {value: prices[0]})).wait()
          await (await nftMarketplace.connect(user1).buyToken(1, {value: prices[1]})).wait()
@@ -159,6 +159,14 @@ describe("MusicNFTMarketplace", ()=>{
          expect(unsoldItems.length === prices.length + soldItems.length).to.equal(true)
       })
       it('getMyTokens should fetch all tokens the user owns', async ()=>{
+         let myItems = await nftMarketplace.connect(user1).getMyTokens()
+
+         expect(myItems.every(i => ownedByUser1.some(j=> j === i.tokenId.toNumber()))).to.equal(true)
+         expect(ownedByUser1.length === myItems.length).to.equal(true)
+         
+         myItems = await nftMarketplace.connect(user2).getMyTokens()
+         expect(myItems.every(i => ownedByUser2.some(j=> j === i.tokenId.toNumber()))).to.equal(true)
+         expect(ownedByUser2.length === myItems.length).to.equal(true)
 
       })
    })
